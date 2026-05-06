@@ -2,8 +2,8 @@
 
 use iced::font::Family;
 use iced::theme::{Custom, Palette};
-use iced::widget::{button, center, column, container, row, slider, space, text};
-use iced::{Alignment, Background, Border, Color, Element, Font, Task, Theme};
+use iced::widget::{button, column, container, row, slider, space, text};
+use iced::{window, Alignment, Background, Border, Color, Element, Font, Settings, Task, Theme};
 use std::sync::Arc;
 
 #[derive(Default)]
@@ -26,6 +26,10 @@ pub fn main() -> iced::Result {
         .default_font(Font {
             family: Family::Name("Lexend"),
             ..Font::DEFAULT
+        })
+        .window(window::Settings {
+            maximized: true,
+            ..Default::default()
         })
         .run()
 }
@@ -65,7 +69,7 @@ fn view(state: &State) -> Element<'_, Message> {
         // row 1
         row![
             space::horizontal(),
-            button(text("Tap").size(20))
+            button(text("Tap").size(64))
                 .on_press(Message::Tap)
                 .padding(20)
                 .style(|theme, status| {
@@ -78,30 +82,86 @@ fn view(state: &State) -> Element<'_, Message> {
         // row 2
         row![
             space::horizontal(),
-            labeled_indicator("A", true, true),
+            indicator('O', false, false),
             space::horizontal(),
-            labeled_indicator("B", false, true),
+            indicator('M', false, false),
             space::horizontal(),
-            labeled_indicator("C", true, true),
+            indicator('T', false, false),
+            space::horizontal(),
+            indicator('E', false, false),
+            space::horizontal(),
+            indicator('I', false, true),
+            space::horizontal(),
+            indicator('S', false, true),
+            space::horizontal(),
+            indicator('H', false, true),
             space::horizontal(),
         ],
         // row 3
         row![
             space::horizontal(),
-            labeled_indicator("D", true, true),
+            indicator('Q', false, false),
             space::horizontal(),
-            labeled_indicator("E", true, true),
+            indicator('G', false, true),
             space::horizontal(),
-            labeled_indicator("F", true, true),
+            indicator('U', false, false),
+            space::horizontal(),
+            indicator('V', false, false),
             space::horizontal(),
         ],
         // row 4
-        row![],
+        row![
+            space::horizontal(),
+            indicator('Z', false, true),
+            space::horizontal(),
+            indicator('F', false, true),
+            space::horizontal(),
+        ],
         // row 5
-        row![],
+        row![
+            space::horizontal(),
+            indicator('Y', false, false),
+            space::horizontal(),
+            indicator('K', false, false),
+            space::horizontal(),
+            indicator('N', false, true),
+            space::horizontal(),
+            indicator('A', false, false),
+            space::horizontal(),
+            indicator('R', false, true),
+            space::horizontal(),
+            indicator('L', false, true),
+            space::horizontal(),
+        ],
         // row 6
+        row![
+            space::horizontal(),
+            indicator('C', false, true),
+            space::horizontal(),
+        ],
+        // row 7
+        row![
+            space::horizontal(),
+            indicator('X', false, true),
+            space::horizontal(),
+            indicator('D', false, true),
+            space::horizontal(),
+            indicator('W', false, true),
+            space::horizontal(),
+            indicator('P', false, true),
+            space::horizontal(),
+        ],
+        // row 8
+        row![
+            space::horizontal(),
+            indicator('B', false, true),
+            space::horizontal(),
+            indicator('J', true, true),
+            space::horizontal(),
+        ],
+        // row 9
         row![column![
-            text(format!("Dot Threshold: {:.1}", state.dot_thresh)),
+            text(format!("Dot Threshold: {:.1}", state.dot_thresh)).size(16),
             slider(0.0..=1.0, state.dot_thresh, Message::DotSlider).step(0.1)
         ]
         .align_x(Alignment::Center)
@@ -111,28 +171,24 @@ fn view(state: &State) -> Element<'_, Message> {
     .into()
 }
 
-fn labeled_indicator<'a>(
-    label: &'a str,
-    is_filled: bool,
-    is_circle: bool,
-) -> container::Container<'a, Message> {
+fn indicator(label: char, toggle: bool, circle: bool) -> container::Container<'static, Message> {
     let theme_color = Color::from_rgb8(0, 255, 175);
 
     container(
         text(label)
-            .size(80)
-            .color(if is_filled { Color::BLACK } else { theme_color }),
+            .size(32)
+            .color(if toggle { Color::BLACK } else { theme_color }),
     )
     .style(move |_theme| container::Style {
-        background: Some(if is_filled {
+        background: Some(if toggle {
             Background::Color(theme_color)
         } else {
-            Background::Color(Color::WHITE)
+            Background::Color(Color::TRANSPARENT)
         }),
         border: Border {
-            radius: if is_circle { 100.0.into() } else { 10.0.into() },
-            width: 0.0,
-            color: Color::TRANSPARENT,
+            radius: if circle { 100.0.into() } else { 10.0.into() },
+            width: 10.0,
+            color: if toggle { Color::WHITE } else { theme_color },
         },
         ..Default::default()
     })
