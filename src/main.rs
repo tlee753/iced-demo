@@ -255,7 +255,7 @@ fn indicator(label: char, toggle: bool, circle: bool) -> container::Container<'s
     container(
         text(label)
             .size(32)
-            .color(if toggle { Color::BLACK } else { theme_color }),
+            .color(if toggle { Color::WHITE } else { theme_color }),
     )
     .style(move |_theme| container::Style {
         background: Some(if toggle {
@@ -265,7 +265,7 @@ fn indicator(label: char, toggle: bool, circle: bool) -> container::Container<'s
         }),
         border: Border {
             radius: if circle { 100.0.into() } else { 10.0.into() },
-            width: 10.0,
+            width: 5.0,
             color: if toggle { Color::WHITE } else { theme_color },
         },
         ..Default::default()
