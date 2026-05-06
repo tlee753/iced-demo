@@ -3,7 +3,8 @@
 use iced::font::Family;
 use iced::theme::{Custom, Palette};
 use iced::widget::{button, column, container, row, slider, space, text};
-use iced::{window, Alignment, Background, Border, Color, Element, Font, Settings, Task, Theme};
+use iced::Length::{self, Fill};
+use iced::{window, Alignment, Background, Border, Color, Element, Font, Task, Theme};
 use std::sync::Arc;
 
 #[derive(Default)]
@@ -67,16 +68,33 @@ fn theme(_state: &State) -> Theme {
 fn view(state: &State) -> Element<'_, Message> {
     column![
         // row 1
+        row![button(text("Tap").size(64).align_x(Alignment::Center))
+            .on_press(Message::Tap)
+            .padding(20)
+            .style(|theme, status| {
+                let mut style = iced::widget::button::primary(theme, status);
+                style.border.radius = 5.0.into();
+                style
+            })
+            .width(Length::Fill),],
+        // row 2
         row![
             space::horizontal(),
-            button(text("Tap").size(64))
-                .on_press(Message::Tap)
-                .padding(20)
-                .style(|theme, status| {
-                    let mut style = iced::widget::button::primary(theme, status);
-                    style.border.radius = 5.0.into();
-                    style
-                }),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
         ],
         // row 2
@@ -87,6 +105,8 @@ fn view(state: &State) -> Element<'_, Message> {
             indicator('M', false, false),
             space::horizontal(),
             indicator('T', false, false),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
             indicator('E', false, false),
             space::horizontal(),
@@ -104,17 +124,37 @@ fn view(state: &State) -> Element<'_, Message> {
             space::horizontal(),
             indicator('G', false, true),
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('U', false, false),
             space::horizontal(),
             indicator('V', false, false),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
         ],
         // row 4
         row![
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('Z', false, true),
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('F', false, true),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
         ],
         // row 5
@@ -126,37 +166,75 @@ fn view(state: &State) -> Element<'_, Message> {
             space::horizontal(),
             indicator('N', false, true),
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('A', false, false),
             space::horizontal(),
             indicator('R', false, true),
             space::horizontal(),
             indicator('L', false, true),
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
         ],
         // row 6
         row![
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('C', false, true),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
         ],
         // row 7
         row![
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('X', false, true),
             space::horizontal(),
             indicator('D', false, true),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
             indicator('W', false, true),
             space::horizontal(),
             indicator('P', false, true),
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
         ],
         // row 8
         row![
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('B', false, true),
             space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             indicator('J', true, true),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
+            space::horizontal(),
             space::horizontal(),
         ],
         // row 9
