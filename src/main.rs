@@ -1,10 +1,13 @@
 #![windows_subsystem = "windows"]
 
 use iced::font::Family;
+use iced::mouse::Cursor;
 use iced::theme::{Custom, Palette};
-use iced::widget::{button, column, container, row, slider, space, text};
-use iced::Length::{self, Fill};
-use iced::{window, Alignment, Background, Border, Color, Element, Font, Task, Theme};
+use iced::widget::canvas::{Canvas, Frame, Geometry, Path, Program, Stroke, Text};
+use iced::widget::{button, column, row, slider, text};
+use iced::{
+    window, Alignment, Color, Element, Font, Length, Point, Rectangle, Renderer, Task, Theme,
+};
 use std::sync::Arc;
 
 #[derive(Default)]
@@ -18,6 +21,11 @@ struct State {
 enum Message {
     Tap,
     DotSlider(f32),
+}
+
+#[derive(Debug)]
+struct Diagram {
+    states: [bool; 26],
 }
 
 pub fn main() -> iced::Result {
@@ -45,7 +53,11 @@ fn new() -> State {
 
 fn update(state: &mut State, message: Message) -> Task<Message> {
     match message {
-        Message::Tap => state.tap += 1.0,
+        Message::Tap => {
+            state.tap += 1.0;
+            state.states[0] = !state.states[0];
+            state.states[1] = !state.states[1];
+        }
         Message::DotSlider(thresh) => state.dot_thresh = thresh,
     }
     Task::none()
@@ -67,7 +79,7 @@ fn theme(_state: &State) -> Theme {
 
 fn view(state: &State) -> Element<'_, Message> {
     column![
-        // row 1
+        // tap button
         row![button(text("Tap").size(64).align_x(Alignment::Center))
             .on_press(Message::Tap)
             .padding(20)
@@ -77,167 +89,13 @@ fn view(state: &State) -> Element<'_, Message> {
                 style
             })
             .width(Length::Fill),],
-        // row 2
-        row![
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 2
-        row![
-            space::horizontal(),
-            indicator('O', false, false),
-            space::horizontal(),
-            indicator('M', false, false),
-            space::horizontal(),
-            indicator('T', false, false),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('E', false, false),
-            space::horizontal(),
-            indicator('I', false, true),
-            space::horizontal(),
-            indicator('S', false, true),
-            space::horizontal(),
-            indicator('H', false, true),
-            space::horizontal(),
-        ],
-        // row 3
-        row![
-            space::horizontal(),
-            indicator('Q', false, false),
-            space::horizontal(),
-            indicator('G', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('U', false, false),
-            space::horizontal(),
-            indicator('V', false, false),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 4
-        row![
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('Z', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('F', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 5
-        row![
-            space::horizontal(),
-            indicator('Y', false, false),
-            space::horizontal(),
-            indicator('K', false, false),
-            space::horizontal(),
-            indicator('N', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('A', false, false),
-            space::horizontal(),
-            indicator('R', false, true),
-            space::horizontal(),
-            indicator('L', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 6
-        row![
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('C', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 7
-        row![
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('X', false, true),
-            space::horizontal(),
-            indicator('D', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('W', false, true),
-            space::horizontal(),
-            indicator('P', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 8
-        row![
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('B', false, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            indicator('J', true, true),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-            space::horizontal(),
-        ],
-        // row 9
+        // diagram
+        Canvas::new(Diagram {
+            states: state.states,
+        })
+        .width(Length::Fill)
+        .height(Length::Fill),
+        // threshold slider
         row![column![
             text(format!("Dot Threshold: {:.1}", state.dot_thresh)).size(16),
             slider(0.0..=1.0, state.dot_thresh, Message::DotSlider).step(0.1)
@@ -249,26 +107,64 @@ fn view(state: &State) -> Element<'_, Message> {
     .into()
 }
 
-fn indicator(label: char, toggle: bool, circle: bool) -> container::Container<'static, Message> {
-    let theme_color = Color::from_rgb8(0, 255, 175);
+impl<Message> Program<Message> for Diagram {
+    type State = ();
 
-    container(
-        text(label)
-            .size(32)
-            .color(if toggle { Color::WHITE } else { theme_color }),
-    )
-    .style(move |_theme| container::Style {
-        background: Some(if toggle {
-            Background::Color(theme_color)
+    fn draw(
+        &self,
+        _state: &(),
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: Cursor,
+    ) -> Vec<Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let neon = Color::from_rgb8(0, 255, 175);
+
+        let r1_y = bounds.height / 2.0;
+        let a_p = Point::new(bounds.width * 0.3, r1_y);
+        let b_p = Point::new(bounds.width * 0.7, r1_y);
+        let radius = 60.0;
+
+        // 1. Draw Connecting Line
+        let line = Path::line(a_p, b_p);
+        frame.stroke(&line, Stroke::default().with_color(neon).with_width(4.0));
+
+        // 2. Draw A Circle
+        let a_circle = Path::circle(a_p, radius);
+        if !self.states[0] {
+            frame.fill(&a_circle, neon);
         } else {
-            Background::Color(Color::TRANSPARENT)
-        }),
-        border: Border {
-            radius: if circle { 100.0.into() } else { 10.0.into() },
-            width: 5.0,
-            color: if toggle { Color::WHITE } else { theme_color },
-        },
-        ..Default::default()
-    })
-    .padding(40)
+            frame.stroke(
+                &a_circle,
+                Stroke::default().with_color(neon).with_width(4.0),
+            );
+        }
+        
+        // 2. Draw B Circle
+        let b_circle = Path::circle(b_p, radius);
+        if !self.states[0] {
+            frame.fill(&b_circle, neon);
+        } else {
+            frame.stroke(
+                &b_circle,
+                Stroke::default().with_color(neon).with_width(4.0),
+            );
+        }
+
+        // 3. Draw Left Text
+        frame.fill_text(Text {
+            content: 'B'.to_string(),
+            position: b_p,
+            color: if !self.states[0] { Color::BLACK } else { neon },
+            size: 80.0.into(),
+            align_x: text::Alignment::Center,
+            align_y: iced::alignment::Vertical::Center,
+            ..Default::default()
+        });
+
+        vec![frame.into_geometry()]
+    }
+    
+    // fn circle(char, 
 }
