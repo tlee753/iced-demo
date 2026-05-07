@@ -6,7 +6,7 @@ use iced::theme::{Custom, Palette};
 use iced::widget::canvas::{Canvas, Frame, Geometry, Path, Program, Stroke, Text};
 use iced::widget::{button, column, row, slider, text};
 use iced::{
-    window, Alignment, Color, Element, Font, Length, Point, Rectangle, Renderer, Task, Theme,
+    window, Alignment, Color, Element, Font, Length, Point, Rectangle, Renderer, Size, Task, Theme,
 };
 use std::sync::Arc;
 
@@ -121,50 +121,131 @@ impl<Message> Program<Message> for Diagram {
         let mut frame = Frame::new(renderer, bounds.size());
         let neon = Color::from_rgb8(0, 255, 175);
 
-        let r1_y = bounds.height / 2.0;
-        let a_p = Point::new(bounds.width * 0.3, r1_y);
-        let b_p = Point::new(bounds.width * 0.7, r1_y);
-        let radius = 60.0;
+        let col_w = bounds.width / 8.0;
+        let row_h = bounds.height / 8.0;
 
-        // 1. Draw Connecting Line
-        let line = Path::line(a_p, b_p);
-        frame.stroke(&line, Stroke::default().with_color(neon).with_width(4.0));
+        let points = [
+            Point::new(col_w * 4.0, row_h * 4.0), // a
+            Point::new(col_w * 3.0, row_h * 7.0), // b
+            Point::new(col_w * 2.0, row_h * 5.0), // c
+            Point::new(col_w * 3.0, row_h * 6.0), // d
+            Point::new(col_w * 4.0, row_h),       // e
+            Point::new(col_w * 5.0, row_h * 3.0), // f
+            Point::new(col_w * 2.0, row_h * 2.0), // g
+            Point::new(col_w * 7.0, row_h),       // h
+            Point::new(col_w * 5.0, row_h),       // i
+            Point::new(col_w * 4.0, row_h * 7.0), // j
+            Point::new(col_w * 2.0, row_h * 4.0), // k
+            Point::new(col_w * 6.0, row_h * 4.0), // l
+            Point::new(col_w * 2.0, row_h),       // m
+            Point::new(col_w * 3.0, row_h * 4.0), // n
+            Point::new(col_w, row_h),             // o
+            Point::new(col_w * 5.0, row_h * 6.0), // p
+            Point::new(col_w, row_h * 2.0), // q
+            Point::new(col_w * 5.0, row_h * 4.0), // r
+            Point::new(col_w * 6.0, row_h),       // s
+            Point::new(col_w * 3.0, row_h),       // t
+            Point::new(col_w * 5.0, row_h * 2.0), // u
+            Point::new(col_w * 6.0, row_h * 2.0), // v
+            Point::new(col_w * 4.0, row_h * 6.0), // w
+            Point::new(col_w * 2.0, row_h * 6.0), // x
+            Point::new(col_w, row_h * 4.0), // y
+            Point::new(col_w * 2.0, row_h * 3.0), // z
+        ];
 
-        // 2. Draw A Circle
-        let a_circle = Path::circle(a_p, radius);
-        if !self.states[0] {
-            frame.fill(&a_circle, neon);
-        } else {
-            frame.stroke(
-                &a_circle,
-                Stroke::default().with_color(neon).with_width(4.0),
-            );
-        }
+        let dots = [
+            false, // a
+            true, // b
+            true, // c
+            true, // d
+            true, // e
+            true, // f
+            true, // g
+            true, // h
+            true, // i
+            false, // j
+            false, // k
+            true, // l
+            false, // m
+            true, // n
+            false, // o
+            true, // p
+            false, // q
+            true, // r
+            true, // s
+            false, // t
+            false, // u
+            false, // v
+            false, // w
+            false, // x
+            false, // y
+            true, // z
+        ];
         
-        // 2. Draw B Circle
-        let b_circle = Path::circle(b_p, radius);
-        if !self.states[0] {
-            frame.fill(&b_circle, neon);
-        } else {
-            frame.stroke(
-                &b_circle,
-                Stroke::default().with_color(neon).with_width(4.0),
-            );
+        // Lines
+        let connects = [
+            (14, 7), // o - h
+            (24, 13), // y - n
+            (0, 11), // a - l
+            (16, 6), // q - g
+            (23, 3), // x - d
+            (22, 15), // w - p
+            (12, 25), // m - z
+            (19, 1), // t - b
+            (4, 9), // e - j
+            (10, 2), // k - c
+            (8, 5), // i - f
+            (18, 21), // s - v
+        ];
+
+        for connect in connects {
+            let line = Path::line(points[connect.0], points[connect.1]);
+            frame.stroke(&line, Stroke::default().with_color(Color::WHITE).with_width(8.0));
         }
 
-        // 3. Draw Left Text
-        frame.fill_text(Text {
-            content: 'B'.to_string(),
-            position: b_p,
-            color: if !self.states[0] { Color::BLACK } else { neon },
-            size: 80.0.into(),
-            align_x: text::Alignment::Center,
-            align_y: iced::alignment::Vertical::Center,
-            ..Default::default()
-        });
+        // Dots and dashes
+        for i in 0..26 {
+            if dots[i] {
+                // dots
+                let dot = Path::circle(points[i], 40.0);
+
+                if self.states[i] {
+                    frame.fill(&dot, neon);
+                    frame.stroke(&dot, Stroke::default().with_color(neon).with_width(8.0));
+                } else {
+                    frame.fill(&dot, Color::BLACK);
+                    frame.stroke(&dot, Stroke::default().with_color(neon).with_width(8.0));
+                }
+            } else {
+                // dashes
+                let dash = Path::rectangle(
+                    Point::new(points[i].x - 40.0, points[i].y - 40.0),
+                    Size::new(80.0, 80.0),
+                );
+
+                if self.states[i] {
+                    frame.fill(&dash, neon);
+                    frame.stroke(&dash, Stroke::default().with_color(neon).with_width(8.0));
+                } else {
+                    frame.fill(&dash, Color::BLACK);
+                    frame.stroke(&dash, Stroke::default().with_color(neon).with_width(8.0));
+                }
+            }
+
+            // Labels
+            let letter = (b'A' + i as u8) as char;
+
+            frame.fill_text(Text {
+                content: letter.to_string(),
+                position: points[i],
+                color: if self.states[i] { Color::BLACK } else { neon },
+                size: 60.0.into(),
+                align_x: text::Alignment::Center,
+                align_y: iced::alignment::Vertical::Center,
+                ..Default::default()
+            });
+        }
 
         vec![frame.into_geometry()]
     }
-    
-    // fn circle(char, 
 }
