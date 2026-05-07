@@ -10,6 +10,11 @@ use iced::{
 };
 use std::sync::Arc;
 
+const LEXEND: Font = Font {
+    family: Family::Name("Lexend"),
+    ..Font::DEFAULT
+};
+
 #[derive(Default)]
 struct State {
     tap: f32,
@@ -32,10 +37,7 @@ pub fn main() -> iced::Result {
     iced::application(new, update, view)
         .theme(theme)
         .font(include_bytes!("lexend.ttf"))
-        .default_font(Font {
-            family: Family::Name("Lexend"),
-            ..Font::DEFAULT
-        })
+        .default_font(LEXEND)
         .window(window::Settings {
             maximized: true,
             ..Default::default()
@@ -55,8 +57,11 @@ fn update(state: &mut State, message: Message) -> Task<Message> {
     match message {
         Message::Tap => {
             state.tap += 1.0;
-            state.states[0] = !state.states[0];
-            state.states[1] = !state.states[1];
+            state.states[19] = !state.states[19];
+            state.states[24] = !state.states[24];
+            state.states[11] = !state.states[11];
+            state.states[4] = !state.states[4];
+            state.states[17] = !state.states[17];
         }
         Message::DotSlider(thresh) => state.dot_thresh = thresh,
     }
@@ -85,24 +90,24 @@ fn view(state: &State) -> Element<'_, Message> {
         })
         .width(Length::Fill)
         .height(Length::Fill),
-        // tap button
-        row![button(text("Tap").size(64).align_x(Alignment::Center))
-            .on_press(Message::Tap)
-            .padding(20)
-            .style(|theme, status| {
-                let mut style = iced::widget::button::primary(theme, status);
-                style.border.radius = 5.0.into();
-                style
-            })
-            .width(Length::Fill),],
         // threshold slider
         row![column![
-            text(format!("Dot Threshold: {:.1}", state.dot_thresh)).size(16),
+            text(format!("Dot Threshold: {:.1}", state.dot_thresh)).size(40),
             slider(0.0..=1.0, state.dot_thresh, Message::DotSlider).step(0.1)
         ]
         .align_x(Alignment::Center)
         .spacing(20),]
         .padding(20),
+        // tap button
+        row![button(text("TAP").size(64).align_x(Alignment::Center))
+            .on_press(Message::Tap)
+            .padding(20)
+            .style(|theme, status| {
+                let mut style = iced::widget::button::primary(theme, status);
+                style.border.radius = 4.0.into();
+                style
+            })
+            .width(Length::Fill),],
     ]
     .into()
 }
@@ -250,6 +255,7 @@ impl<Message> Program<Message> for Diagram {
                 position: points[i],
                 color: if self.states[i] { Color::BLACK } else { neon },
                 size: 60.0.into(),
+                font: LEXEND,
                 align_x: text::Alignment::Center,
                 align_y: iced::alignment::Vertical::Center,
                 ..Default::default()
