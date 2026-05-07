@@ -79,6 +79,12 @@ fn theme(_state: &State) -> Theme {
 
 fn view(state: &State) -> Element<'_, Message> {
     column![
+        // diagram
+        Canvas::new(Diagram {
+            states: state.states,
+        })
+        .width(Length::Fill)
+        .height(Length::Fill),
         // tap button
         row![button(text("Tap").size(64).align_x(Alignment::Center))
             .on_press(Message::Tap)
@@ -89,12 +95,6 @@ fn view(state: &State) -> Element<'_, Message> {
                 style
             })
             .width(Length::Fill),],
-        // diagram
-        Canvas::new(Diagram {
-            states: state.states,
-        })
-        .width(Length::Fill)
-        .height(Length::Fill),
         // threshold slider
         row![column![
             text(format!("Dot Threshold: {:.1}", state.dot_thresh)).size(16),
@@ -141,7 +141,7 @@ impl<Message> Program<Message> for Diagram {
             Point::new(col_w * 3.0, row_h * 4.0), // n
             Point::new(col_w, row_h),             // o
             Point::new(col_w * 5.0, row_h * 6.0), // p
-            Point::new(col_w, row_h * 2.0), // q
+            Point::new(col_w, row_h * 2.0),       // q
             Point::new(col_w * 5.0, row_h * 4.0), // r
             Point::new(col_w * 6.0, row_h),       // s
             Point::new(col_w * 3.0, row_h),       // t
@@ -149,59 +149,69 @@ impl<Message> Program<Message> for Diagram {
             Point::new(col_w * 6.0, row_h * 2.0), // v
             Point::new(col_w * 4.0, row_h * 6.0), // w
             Point::new(col_w * 2.0, row_h * 6.0), // x
-            Point::new(col_w, row_h * 4.0), // y
+            Point::new(col_w, row_h * 4.0),       // y
             Point::new(col_w * 2.0, row_h * 3.0), // z
         ];
 
         let dots = [
             false, // a
-            true, // b
-            true, // c
-            true, // d
-            true, // e
-            true, // f
-            true, // g
-            true, // h
-            true, // i
+            true,  // b
+            true,  // c
+            true,  // d
+            true,  // e
+            true,  // f
+            true,  // g
+            true,  // h
+            true,  // i
             false, // j
             false, // k
-            true, // l
+            true,  // l
             false, // m
-            true, // n
+            true,  // n
             false, // o
-            true, // p
+            true,  // p
             false, // q
-            true, // r
-            true, // s
+            true,  // r
+            true,  // s
             false, // t
             false, // u
             false, // v
             false, // w
             false, // x
             false, // y
-            true, // z
+            true,  // z
         ];
-        
+
         // Lines
         let connects = [
-            (14, 7), // o - h
+            (14, 7),  // o - h
             (24, 13), // y - n
-            (0, 11), // a - l
-            (16, 6), // q - g
-            (23, 3), // x - d
+            (0, 11),  // a - l
+            (16, 6),  // q - g
+            (23, 3),  // x - d
             (22, 15), // w - p
             (12, 25), // m - z
-            (19, 1), // t - b
-            (4, 9), // e - j
-            (10, 2), // k - c
-            (8, 5), // i - f
+            (19, 1),  // t - b
+            (4, 9),   // e - j
+            (10, 2),  // k - c
+            (8, 5),   // i - f
             (18, 21), // s - v
         ];
 
         for connect in connects {
             let line = Path::line(points[connect.0], points[connect.1]);
-            frame.stroke(&line, Stroke::default().with_color(Color::WHITE).with_width(8.0));
+            frame.stroke(
+                &line,
+                Stroke::default().with_color(Color::WHITE).with_width(8.0),
+            );
         }
+
+        // Start line
+        let line = Path::line(Point::new(col_w * 3.5, 0.0), Point::new(col_w * 3.5, row_h));
+        frame.stroke(
+            &line,
+            Stroke::default().with_color(Color::WHITE).with_width(8.0),
+        );
 
         // Dots and dashes
         for i in 0..26 {
